@@ -16,6 +16,8 @@ import {
   saveBroadcast,
   subscribeToBroadcasts,
   setupPresence,
+  incrementDownloadsCount,
+  subscribeToDownloadsCount,
 } from './lib/firebase';
 import type { ApplicationDetails, SystemSettings, BroadcastLog } from './lib/firebase';
 
@@ -211,6 +213,9 @@ function App() {
   const [activeUsers, setActiveUsers] = useState(1);
   const [totalVisits, setTotalVisits] = useState(0);
   const [broadcastsList, setBroadcastsList] = useState<(BroadcastLog & { id: string })[]>([]);
+  const [downloadsCount, setDownloadsCount] = useState(0);
+  const [editDownloadBtnText, setEditDownloadBtnText] = useState('Download for Windows');
+  const [editDownloadUrl, setEditDownloadUrl] = useState('');
 
   // Admin Config edit states
   const [editAnnouncement, setEditAnnouncement] = useState('');
@@ -302,6 +307,8 @@ function App() {
         setEditTimerActive(data.timerActive ?? true);
         setEditCountdownLabel(data.countdownLabel || 'Beta drops in');
         setEditThemeColor(data.themeColor || 'indigo');
+        setEditDownloadBtnText(data.downloadBtnText || 'Download for Windows');
+        setEditDownloadUrl(data.downloadUrl || '');
       }
     });
     return () => unsubscribe();
@@ -342,6 +349,14 @@ function App() {
   useEffect(() => {
     const unsubscribe = setupPresence((count) => {
       setActiveUsers(count);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Subscribe to live downloads count
+  useEffect(() => {
+    const unsubscribe = subscribeToDownloadsCount((count) => {
+      setDownloadsCount(count);
     });
     return () => unsubscribe();
   }, []);
@@ -1035,6 +1050,12 @@ ${adminInstructions}`;
                   newSettings.themeColor = val.toLowerCase() as any;
                   setEditThemeColor(val.toLowerCase() as any);
                 }
+              } else if (key === 'downloadBtnText') {
+                newSettings.downloadBtnText = val;
+                setEditDownloadBtnText(val);
+              } else if (key === 'downloadUrl') {
+                newSettings.downloadUrl = val;
+                setEditDownloadUrl(val);
               }
             }
           });
@@ -1217,7 +1238,9 @@ ${adminInstructions}`;
         timerTarget: editTimerTarget,
         timerActive: editTimerActive,
         countdownLabel: editCountdownLabel,
-        themeColor: editThemeColor
+        themeColor: editThemeColor,
+        downloadBtnText: editDownloadBtnText,
+        downloadUrl: editDownloadUrl
       };
       await updateSystemSettings(newSettings);
       adminEditingRef.current = false;
@@ -1228,6 +1251,16 @@ ${adminInstructions}`;
     } finally {
       setAdminSaving(false);
     }
+  };
+
+  // Handle file download and increment database tracker
+  const handleDownload = async () => {
+    try {
+      await incrementDownloadsCount();
+    } catch (e) {
+      console.warn("Downloads increment failed:", e);
+    }
+    window.open(settings.downloadUrl || 'https://github.com/beatlabs790/beatwave/releases', '_blank');
   };
 
   const handleAdminToggleMaintenance = async () => {
@@ -1376,7 +1409,7 @@ ${adminInstructions}`;
         </div>
 
         {/* Ticking Countdown Timer (Rendered dynamically if active in settings) */}
-        {settings.timerActive && (
+        {settings.timerActive && !settings.downloadUrl && (
           <div className="mt-8 flex flex-col items-center gap-3 animate-fade-in">
             <span className="text-[10px] uppercase font-bold tracking-widest select-none opacity-80"
               style={{ color: THEMES[settings.themeColor || 'indigo'].secondary }}
@@ -1397,30 +1430,48 @@ ${adminInstructions}`;
         )}
 
         {/* Real-time Waitlist Slots claimed Progress Bar (Syncs from 0 to 1000 based on applications list size) */}
-        <div className="mt-10 w-full max-w-xs mx-auto animate-fade-in flex flex-col gap-2">
-          <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider text-white/50 px-1">
-            <span>Beta Wave 1 Allocation</span>
-            <span className="font-semibold" style={{ color: THEMES[settings.themeColor || 'indigo'].secondary }}>{slotsClaimed}/1000 claimed</span>
+        {!settings.downloadUrl && (
+          <div className="mt-10 w-full max-w-xs mx-auto animate-fade-in flex flex-col gap-2">
+            <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider text-white/50 px-1">
+              <span>Beta Wave 1 Allocation</span>
+              <span className="font-semibold" style={{ color: THEMES[settings.themeColor || 'indigo'].secondary }}>{slotsClaimed}/1000 claimed</span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-white/5 border border-white/10 p-[1px] overflow-hidden">
+              <div 
+                className="h-full rounded-full transition-all duration-1000"
+                style={{ 
+                  width: `${Math.min((slotsClaimed / 1000) * 100, 100)}%`,
+                  backgroundImage: THEMES[settings.themeColor || 'indigo'].gradient.replace('to left', 'to right'),
+                  boxShadow: `0 0 10px ${THEMES[settings.themeColor || 'indigo'].secondary}66`
+                }}
+              />
+            </div>
           </div>
-          <div className="w-full h-2 rounded-full bg-white/5 border border-white/10 p-[1px] overflow-hidden">
-            <div 
-              className="h-full rounded-full transition-all duration-1000"
-              style={{ 
-                width: `${Math.min((slotsClaimed / 1000) * 100, 100)}%`,
-                backgroundImage: THEMES[settings.themeColor || 'indigo'].gradient.replace('to left', 'to right'),
-                boxShadow: `0 0 10px ${THEMES[settings.themeColor || 'indigo'].secondary}66`
-              }}
-            />
-          </div>
-        </div>
+        )}
 
-        {/* Big CTA Waitlist Trigger (scaled up frosted glass capsule button) */}
-        <button 
-          className="liquid-glass px-[36px] py-[28px] text-xs uppercase tracking-wider font-bold mt-[20px] rounded-full border border-white/15 hover:bg-white/10 hover:border-white/30 text-white active:scale-95 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)] cursor-pointer animate-fade-in"
-          onClick={() => setModalOpen(true)}
-        >
-          Join Waitlist
-        </button>
+        {/* Big CTA Waitlist Trigger or Download Button */}
+        {settings.downloadUrl ? (
+          <div className="flex flex-col items-center select-none animate-fade-in">
+            <button 
+              className="liquid-glass px-[44px] py-[28px] text-xs uppercase tracking-wider font-bold mt-[20px] rounded-full border border-white/15 hover:bg-white/10 hover:border-white/30 text-white active:scale-95 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)] cursor-pointer flex items-center gap-3"
+              onClick={handleDownload}
+            >
+              <HardDrive className="w-4 h-4 text-white/90 animate-bounce" style={{ animationDuration: '2.5s' }} />
+              <span>{settings.downloadBtnText || 'Download BeatWave PC'}</span>
+            </button>
+            <div className="mt-3.5 text-[9px] uppercase font-bold tracking-widest text-white/40 flex items-center gap-1.5 justify-center">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>{downloadsCount} verified downloads</span>
+            </div>
+          </div>
+        ) : (
+          <button 
+            className="liquid-glass px-[36px] py-[28px] text-xs uppercase tracking-wider font-bold mt-[20px] rounded-full border border-white/15 hover:bg-white/10 hover:border-white/30 text-white active:scale-95 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)] cursor-pointer"
+            onClick={() => setModalOpen(true)}
+          >
+            Join Waitlist
+          </button>
+        )}
 
         {/* Large, Frosted Glass Ecosystem Portal Links */}
         <div className="mt-12 flex flex-wrap gap-4 justify-center items-center max-w-2xl mx-auto">
@@ -2015,7 +2066,7 @@ ${adminInstructions}`;
             </div>
 
             {/* Stats Summary Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-white/[0.01] p-3 rounded-2xl border border-white/5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 bg-white/[0.01] p-3 rounded-2xl border border-white/5">
               <div className="p-3 bg-white/3 rounded-xl border border-white/5 text-left">
                 <span className="text-[8px] uppercase tracking-widest text-white/35 block font-bold">Total Signups</span>
                 <span className="text-lg font-bold text-white">{applicationsList.length}</span>
@@ -2030,6 +2081,13 @@ ${adminInstructions}`;
               <div className="p-3 bg-white/3 rounded-xl border border-white/5 text-left">
                 <span className="text-[8px] uppercase tracking-widest text-white/35 block font-bold">Total Visits</span>
                 <span className="text-lg font-bold text-white">{totalVisits}</span>
+              </div>
+              <div className="p-3 bg-white/3 rounded-xl border border-white/5 text-left">
+                <span className="text-[8px] uppercase tracking-widest text-white/35 block font-bold flex items-center gap-1.5">
+                  <HardDrive className="w-2.5 h-2.5 text-white/40" />
+                  Downloads
+                </span>
+                <span className="text-lg font-bold text-white">{downloadsCount}</span>
               </div>
               <div className="p-3 bg-white/3 rounded-xl border border-white/5 text-left">
                 <span className="text-[8px] uppercase tracking-widest text-white/35 block font-bold flex items-center gap-1.5">
@@ -2134,6 +2192,32 @@ ${adminInstructions}`;
                       onFocus={() => { adminEditingRef.current = true; }}
                       onChange={(e) => setEditCountdownLabel(e.target.value)}
                       placeholder="e.g. Beta drops in..."
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#6366f1]/40"
+                    />
+                  </div>
+
+                  {/* Download Button Text */}
+                  <div className="flex flex-col gap-1.5 text-left">
+                    <label className="text-[9px] uppercase font-bold tracking-wider text-white/45">Download Button Text</label>
+                    <input
+                      type="text"
+                      value={editDownloadBtnText}
+                      onFocus={() => { adminEditingRef.current = true; }}
+                      onChange={(e) => setEditDownloadBtnText(e.target.value)}
+                      placeholder="e.g. Download for Windows"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#6366f1]/40"
+                    />
+                  </div>
+
+                  {/* Download URL Link */}
+                  <div className="flex flex-col gap-1.5 text-left">
+                    <label className="text-[9px] uppercase font-bold tracking-wider text-white/45">Download URL Link (Empty to hide download button)</label>
+                    <input
+                      type="text"
+                      value={editDownloadUrl}
+                      onFocus={() => { adminEditingRef.current = true; }}
+                      onChange={(e) => setEditDownloadUrl(e.target.value)}
+                      placeholder="https://github.com/..."
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#6366f1]/40"
                     />
                   </div>

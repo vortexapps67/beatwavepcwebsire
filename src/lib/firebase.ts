@@ -34,6 +34,8 @@ export interface SystemSettings {
   timerActive: boolean;
   countdownLabel: string;
   themeColor?: 'indigo' | 'amber' | 'emerald' | 'rose';
+  downloadBtnText?: string;
+  downloadUrl?: string;
 }
 
 // Push waitlist applications to /applications
@@ -68,7 +70,6 @@ export const subscribeToSettings = (callback: (settings: SystemSettings) => void
     if (snapshot.exists()) {
       callback(snapshot.val());
     } else {
-      // Default fallback settings
       const defaultSettings: SystemSettings = {
         maintenanceMode: false,
         maintenanceMessage: '',
@@ -76,7 +77,9 @@ export const subscribeToSettings = (callback: (settings: SystemSettings) => void
         timerTarget: '2026-07-15T12:00:00',
         timerActive: true,
         countdownLabel: 'Beta drops in',
-        themeColor: 'indigo'
+        themeColor: 'indigo',
+        downloadBtnText: 'Download for Windows',
+        downloadUrl: 'https://github.com/beatlabs790/beatwave/releases'
       };
       // Write initial settings to database
       set(settingsRef, defaultSettings);
@@ -190,5 +193,22 @@ export const subscribeToBroadcasts = (callback: (list: (BroadcastLog & { id: str
     } else {
       callback([]);
     }
+  });
+};
+
+// Increment downloads count in Firebase
+export const incrementDownloadsCount = async () => {
+  const downloadsRef = ref(db, 'stats/downloadsCount');
+  onValue(downloadsRef, (snap) => {
+    const current = snap.val() || 0;
+    set(downloadsRef, current + 1);
+  }, { onlyOnce: true });
+};
+
+// Subscribe to live downloads count
+export const subscribeToDownloadsCount = (callback: (count: number) => void) => {
+  const downloadsRef = ref(db, 'stats/downloadsCount');
+  return onValue(downloadsRef, (snap) => {
+    callback(snap.val() || 0);
   });
 };
