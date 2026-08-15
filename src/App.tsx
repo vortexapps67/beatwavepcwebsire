@@ -1263,6 +1263,19 @@ ${adminInstructions}`;
     window.open(settings.downloadUrl || 'https://github.com/beatlabs790/beatwave/releases', '_blank');
   };
 
+  // Handle UPI copy & redirect
+  const handleSupportUPI = () => {
+    try {
+      navigator.clipboard.writeText('akshanshsinha67@axl');
+      addToast('💖 UPI ID copied: akshanshsinha67@axl! Redirecting to support...', 'success');
+    } catch (e) {
+      console.warn("Clipboard copy failed:", e);
+    }
+    setTimeout(() => {
+      window.open('https://support-akshansh.vercel.app', '_blank');
+    }, 1000);
+  };
+
   const handleAdminToggleMaintenance = async () => {
     setMaintenanceToggling(true);
     try {
@@ -1538,15 +1551,15 @@ ${adminInstructions}`;
             <span>Instagram</span>
           </a>
 
-          {/* Support via UPI */}
+          {/* Support Us */}
           <button
-            onClick={() => addToast('💖 UPI Support coming soon in Beta Wave 2! Thank you.', 'info')}
+            onClick={handleSupportUPI}
             className="liquid-glass flex items-center gap-3 px-8 py-4 rounded-full active:scale-95 transition-all text-sm font-bold text-white/80 hover:text-white shadow-lg duration-300 transform hover:scale-[1.04] cursor-pointer"
           >
             <img src="/upi logo.png" alt="UPI Logo" className="h-4 w-auto object-contain brightness-0 invert opacity-85 shrink-0" />
             <span className="flex items-center gap-1.5">
               <span>Support Us</span>
-              <span className="text-[8px] bg-white/10 text-white/50 px-1.5 py-0.5 rounded-full uppercase tracking-wider font-bold shrink-0">Soon</span>
+              <span className="text-[8px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wider font-bold shrink-0">UPI</span>
             </span>
           </button>
         </div>
