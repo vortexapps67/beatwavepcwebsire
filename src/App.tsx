@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Sparkles, Check, ShieldCheck, RefreshCw, Layers, X, Smartphone, MessageSquare, Send, Settings, Lock, Zap, Music, HardDrive, ChevronDown, Trash2 } from 'lucide-react';
+import { Sparkles, Check, ShieldCheck, RefreshCw, Layers, X, Smartphone, MessageSquare, Send, Settings, Lock, Zap, Music, HardDrive, ChevronDown, Trash2, Activity } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from './components/ui/button';
 import {
@@ -216,6 +216,7 @@ function App() {
   const [downloadsCount, setDownloadsCount] = useState(0);
   const [editDownloadBtnText, setEditDownloadBtnText] = useState('Download for Windows');
   const [editDownloadUrl, setEditDownloadUrl] = useState('');
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
 
   // Admin Config edit states
   const [editAnnouncement, setEditAnnouncement] = useState('');
@@ -360,7 +361,14 @@ function App() {
     });
     return () => unsubscribe();
   }, []);
-
+  // Listen for navigation history changes (popstate)
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
   // Listen for custom PWA installation prompt
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -1274,6 +1282,12 @@ ${adminInstructions}`;
     setTimeout(() => {
       window.open('https://support-akshansh.vercel.app', '_blank');
     }, 1000);
+  };
+
+  // Handle 404 page back-to-home navigation
+  const handleGoHome = () => {
+    window.history.pushState({}, '', '/');
+    setCurrentPath('/');
   };
 
   const handleAdminToggleMaintenance = async () => {
@@ -2679,6 +2693,41 @@ ${adminInstructions}`;
                 }}
               />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 404 SIGNALS LOST SCREEN */}
+      {currentPath !== '/' && currentPath !== '/index.html' && (
+        <div className="fixed inset-0 z-[90] flex flex-col items-center justify-center bg-[#050508] px-6 text-center select-none">
+          {/* Neon gradient background glow */}
+          <div className="absolute w-[500px] h-[500px] rounded-full bg-rose-500/5 blur-[100px] pointer-events-none" />
+          
+          <div className="relative z-10 flex flex-col items-center gap-6 max-w-sm">
+            {/* Pulsing Glitch Error Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-3.5 shadow-2xl animate-pulse">
+              <Activity className="w-8 h-8 text-rose-500 animate-pulse" />
+            </div>
+
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-rose-400 bg-rose-500/10 px-3.5 py-1 rounded-full border border-rose-500/20">
+                Error 404
+              </span>
+              <h1 className="font-display text-4xl font-normal uppercase tracking-wider text-white mt-2">
+                Signals Lost
+              </h1>
+              <p className="text-xs text-white/50 leading-relaxed mt-2 max-w-xs font-sans">
+                The sound frequency or route you are looking for has flatlined or does not exist.
+              </p>
+            </div>
+
+            {/* Back to Safety CTA */}
+            <button
+              onClick={handleGoHome}
+              className="liquid-glass px-8 py-3.5 text-xs uppercase tracking-wider font-bold mt-4 rounded-full border border-white/15 hover:bg-white/10 hover:border-white/30 text-white active:scale-95 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)] cursor-pointer"
+            >
+              Back to Frequency
+            </button>
           </div>
         </div>
       )}

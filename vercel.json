@@ -1,0 +1,6 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/((?!assets/|public/|sw\\.js|favicon\\.ico|image\\.png|upi\\ logo\\.png|qr-code\\.svg).*):path*", "destination": "/index.html" }
+  ]
+}
