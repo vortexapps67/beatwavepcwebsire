@@ -1486,9 +1486,24 @@ ${adminInstructions}`;
               <HardDrive className="w-4 h-4 text-white/90 animate-bounce" style={{ animationDuration: '2.5s' }} />
               <span>{settings.downloadBtnText || 'Download BeatWave PC'}</span>
             </button>
-            <div className="mt-3.5 text-[9px] uppercase font-bold tracking-widest text-white/40 flex items-center gap-1.5 justify-center">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>{downloadsCount} verified downloads</span>
+            <div className="mt-4 px-4 py-1.5 rounded-full border border-white/5 bg-white/[0.02] backdrop-blur-md flex items-center gap-2.5 justify-center shadow-lg select-none">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-white/50">
+                Join{' '}
+                <strong 
+                  className="font-extrabold"
+                  style={{ 
+                    color: THEMES[settings.themeColor || 'indigo'].secondary,
+                    textShadow: `0 0 10px ${THEMES[settings.themeColor || 'indigo'].secondary}88`
+                  }}
+                >
+                  {downloadsCount.toLocaleString()}
+                </strong>{' '}
+                audiophiles listening lossless
+              </span>
             </div>
           </div>
         ) : (
