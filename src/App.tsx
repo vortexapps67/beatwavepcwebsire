@@ -858,7 +858,7 @@ function App() {
       setMessages((prev) => [
         ...prev,
         { sender: 'user', text: questionText },
-        { sender: 'bot', text: '🔒 Admin access granted to BeatWave AI! You can now configure settings (e.g., "change theme to emerald", "toggle maintenance on", "set announcement to Hello World", or "export waitlist"). To exit, say "logout".' }
+        { sender: 'bot', text: '🔒 Admin access granted to BeatWave PC! You can now configure settings (e.g., "change theme to emerald", "toggle maintenance on", "set announcement to Hello World", or "export waitlist"). To exit, say "logout".' }
       ]);
       return;
     }
@@ -1414,7 +1414,7 @@ ${adminInstructions}`;
 
         {/* Subtitle */}
         <p className="text-hero-sub text-sm sm:text-lg leading-relaxed sm:leading-8 max-w-md mt-[9px] opacity-80 animate-fade-in">
-          Shape scattered signals into lossless equalized audio. Experience pure, bit-perfect playback on your desktop.
+          The best music app for pc. Experience pure, bit-perfect lossless WASAPI audio playback on your desktop.
         </p>
 
         {/* Glassmorphic Feature Pills */}
@@ -2085,7 +2085,7 @@ ${adminInstructions}`;
             <div className="flex justify-between items-center pb-3 border-b border-white/5">
               <div className="flex items-center gap-2">
                 <Settings className="w-5 h-5 text-[#6366f1] animate-spin" style={{ animationDuration: '8s' }} />
-                <h2 className="text-sm font-bold text-white uppercase tracking-widest">BeatWave AI Admin Console</h2>
+                <h2 className="text-sm font-bold text-white uppercase tracking-widest">BeatWave PC Admin Console</h2>
               </div>
               <button onClick={() => setAdminPanelOpen(false)} className="text-white/40 hover:text-white">
                 <X className="w-4 h-4" />

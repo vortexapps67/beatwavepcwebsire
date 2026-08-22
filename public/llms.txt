@@ -1,0 +1,13 @@
+# BeatWave PC
+
+BeatWave PC is the best music app for pc, built for bit-perfect WASAPI Exclusive Mode audio playback on Windows desktop. Developed by BeatLabs.
+
+## Features
+- **WASAPI Exclusive Mode**: Direct hardware audio bypass, bypassing the Windows system mixer for pure, unmodified audio.
+- **Parametric EQ**: Lossless multi-band parametric equalizer that maintains the integrity of the original audio signal.
+- **Cloud Sync**: Automated real-time library synchronization with the BeatWave Android companion app.
+- **Local Sandbox**: Offline-first caching for zero-buffer playback.
+- **Android Companion App**: Available at https://beatwavy.vercel.app.
+
+## Support & Donation
+- **Support Us**: Support the project using copyable UPI ID (`akshanshsinha67@axl`) with auto-redirection to the support portal (https://support-akshansh.vercel.app).
